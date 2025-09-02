@@ -20,7 +20,7 @@ java MainA
 
 #### What results do you expect?:
 
-Since there is no synchronisation we expect the reads to override each other alot. Since the treads have similar speed
+Since there is no synchronisation we expect the threads to override each other alot. Since the treads have similar speed
 we can assume they will run somewhat interlaced so they should be able to count to at least a million, likely a bit
 more.
 
@@ -42,7 +42,7 @@ java MainB
 Depends on how the `synchronized` is implemented, if it is applied to a nonstatic method nothing will change from 1A as
 each thread will have its own method and lock, making the lock useless. If the `synchronized` is applied either to a
 static method or directly to a class object the desired effect is achieved and the methods are synchronized, meaning the
-count should reach 4 000 000.
+count will reach 4 000 000.
 
 ### Task 1c: Synchronization performance
 
@@ -67,6 +67,22 @@ In figure 1, we see how the execution time scaled with the number of threads.
 ## Task 2: Guarded blocks using wait()/notify()
 
 ## Task 3: Producer-Consumer Buffer using Condition Variables
+
+Source files:
+
+- `task3/Main.java` (main file)
+- `task3/Buffer.java`
+
+To compile and execute:
+
+```
+javac Main.java Buffer.java
+java Main
+```
+
+The buffer order of consumption is LIFO, boolean `closed` was used to implement the desired behaviour. Consumer in part
+B is much slower that the producer, the consumer is able to remove only one value (on our machine) while the stack is
+growing resulting in the remaing values be removed after the stack has already been filled and the producer has quit.
 
 ## Task 4: Counting Semaphore
 
