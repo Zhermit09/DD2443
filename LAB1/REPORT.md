@@ -86,4 +86,158 @@ growing resulting in the remaing values be removed after the stack has already b
 
 ## Task 4: Counting Semaphore
 
+### Runner
+
+- Logs before entering `s_wait()`
+- Logs start of `CS`
+- Logs "works" for 2 sec
+- Logs end of `CS`
+- Logs before entering `signal()`
+
+### Test 1
+
+- Test `CS` overlap
+- `n=1`
+- `2` runners
+
+### Test 2
+
+- Test multiple `CS` overlap
+- `n=3`
+- `3` runners
+
+### Test 3
+
+- Test no resources case
+- `n=0`
+- `3` runners
+
+### Test 4
+
+- Test multiple waiting in queue
+- `n=2`
+- `5` runners
+
+### Test 5
+
+- Test reusability (similar to `Test 4`)
+- `n=2`
+- `5` runners
+- `6` cycles
+
+### Test 6
+
+- Mock spurious wakeups using `Interupts`
+- `n=1`
+- `2` runners
+- `3` cycles
+
+### First Semaphore
+
+```
+    public synchronized void signal() {
+        permits++;
+        if (permits <= 0) {
+            notify();
+        }
+    }
+```
+
+```
+    public synchronized void s_wait() throws InterruptedException {
+        permits--;
+        if (permits < 0) {
+            wait();
+        }
+    }
+```
+
+Stuck at `Test 4`, issue in `permits < 0`, even though a signal is sent the threads can't stop waiting. Failed to handle
+queuing, solution add a flag to the condition.
+
+### Go Semaphore
+
+```
+    public synchronized void signal() {
+        go  = true;
+        permits++;
+        if (permits <= 0) {
+            notify();
+        }
+    }
+```
+
+```
+    public synchronized void s_wait() throws InterruptedException {
+        permits--;
+        if (permits < 0 && !go) {
+            wait();
+        }
+        go = false;
+    }
+```
+
+Problem at `Test 6`, `2` runners entered `CS` while `n=1`. Failed to handle spurious wakeups, simple fix change from
+`if` to `while` also need to consume the `Interupt` as it is used to mock the spurious wakeup.
+
+### Spurious Semaphore
+
+```
+    public synchronized void s_wait(){
+        permits--;
+        while (permits < 0 && !go) {
+            try {
+                wait();
+            } catch (InterruptedException _) { //Mocking spurious wakeups, should not be part of real implementation 
+                System.out.println("Spurious wakeup ignored");
+            }
+        }
+        go = false;
+    }
+```
+
+2 Issues noticed.
+
+If 2 `signal()` are called together then only one runner would enter `CS` as the `go` boolean gets
+overridden by runner `A` thus not letting runner `B` leave the loop. Solution change `go` to an integer.
+
+If a real `Interrupt` occurs `s_wait()` does not exit gracefully and a permit is permanently consumed. Solution, a
+runner
+should return the permit if they are leaving the queue early.
+
+### Final Semaphore
+
+```
+    public synchronized void signal() {
+        go++;
+        permits++;
+        if (permits <= 0) {
+            notify();
+        }
+    }
+```
+
+```
+    public synchronized void s_wait() {
+        permits--;
+        while (permits < 0 && go == 0) {
+            try {
+                wait();
+            } catch (InterruptedException _) {  //Mocking spurious wakeups, should not be part of real implementation
+                System.out.println("Spurious wakeup ignored");
+            } catch (Exception e) {             //Mocking interrupt, leave the queue gracefully
+                permits++;
+                throw new RuntimeException(e);
+            }
+        }
+        go = go > 0 ? go-1 : 0;
+    }
+```
+
+Deadlocks can occur only if the permits are initialized to `n < 1` indicating that there are no resources available, but
+that is intended behaviour. The algorithm should be livelock free if `s_wait()` and `signal()` are used correctly, we
+basically have a waiting and leaving queue, meaning the runners can't sabotage each other. However, the algorithm is not
+starvation free as it only cares that there are up to `n` runners in the `CS` the rest is up to `notify()`
+implementation and spurious wakeups.
+
 ## Task 5: Dining Philosophers
