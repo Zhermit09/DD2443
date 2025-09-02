@@ -21,9 +21,6 @@ public class CountingSemaphore {
                 wait();
             } catch (InterruptedException _) {  //Mock spurious wakeup
                 System.out.println("Interrupt");
-            } catch (Exception e) {             //Leave the queue
-                permits++;
-                throw new RuntimeException(e);
             }
         }
         go = false;
