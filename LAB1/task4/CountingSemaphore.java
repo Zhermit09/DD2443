@@ -12,14 +12,10 @@ public class CountingSemaphore {
         }
     }
 
-    public synchronized void s_wait() {
+    public synchronized void s_wait() throws InterruptedException {
         permits--;
         while (permits < 0) {
-            try {
-                wait();
-            } catch (InterruptedException _) {
-                System.out.println("Interrupt");
-            }
+            wait();
         }
     }
 }
