@@ -1,13 +1,13 @@
 public class CountingSemaphore {
     private volatile int permits;
-    private volatile int go = 0;
+    private volatile boolean go = false;
 
     public CountingSemaphore(int n) {
         permits = n;
     }
 
     public synchronized void signal() {
-        go++;
+        go  = true;
         permits++;
         if (permits <= 0) {
             notify();
@@ -16,7 +16,7 @@ public class CountingSemaphore {
 
     public synchronized void s_wait() {
         permits--;
-        while (permits < 0 && go == 0) {
+        while (permits < 0 && !go) {
             try {
                 wait();
             } catch (InterruptedException _) {  //Mock spurious wakeup
@@ -26,6 +26,6 @@ public class CountingSemaphore {
                 throw new RuntimeException(e);
             }
         }
-        go = go > 0 ? go-- : 0;
+        go = false;
     }
 }
