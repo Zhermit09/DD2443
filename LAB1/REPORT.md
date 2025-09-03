@@ -3,9 +3,10 @@
 - Lab Group PE
 - Ghaffari Ermia and Urvantsev Pavel
 
-## Task 1: Simple Synchronization
+We would like to point out that skeleton code for Task 1b and Task 1c has been mixed up. Skeleton for Task 5b also has
+the wrong class name.
 
-We would like to point out that skeleton code for Task 1b and Task 1c has been mixed up.
+## Task 1: Simple Synchronization
 
 ### Task 1a: Race conditions
 
@@ -61,7 +62,7 @@ java MainC <N>
 
 Where `N` is number of threads to execute with.
 
-![My plot for task 1c](data/chart.svg)
+![My plot for task 1c](data/chart.png)
 
 In the figure above, we see how the execution time scaled with the number of threads. However, that is expected since
 the workload also scales based on `N` since every thread need to add `1 000 000` to the shared counter.
@@ -80,6 +81,19 @@ for concurrency as it can otherwise be bottlenecked. Concurrency also does not s
 overheads one needs to pay in order to resolve problems that arise with concurrency.
 
 ## Task 2: Guarded blocks using wait()/notify()
+Source files:
+
+- `task2/MainA.java` (main file)
+- `task2/MainB.java` (main file)
+- `task2/MainC.java` (main file)
+- `task2/MainD.java` (main file)
+
+To compile and execute:
+
+```
+javac MainX.java
+java MainX
+```
 
 Running the microbenchmark with `100` warmups and `1000` samples gave the following result
 `uB: 343.020	uC: 4880.043	uC/uB: 14.227` where `u` is the average delay for each method. As it can be seen method
@@ -273,3 +287,60 @@ starvation free as it only cares that there are up to `n` runners in the `CS` th
 implementation and spurious wakeups.
 
 ## Task 5: Dining Philosophers
+
+Source files:
+
+- `task5/MainA.java` (main file)
+- `task5/MainB.java` (main file)
+
+To compile and execute:
+
+```
+javac MainX.java
+java MainX
+```
+
+### Task 5a
+
+The deadlock happens because of circular dependency, everyone picks up the left chopstick and succeeds, then tries to
+acquire the right chopstick, all chopsticks are taken, nobody lets go, deadlock. It is harder to deadlock at higher `n`
+as
+one need to complete the longer circular dependency and randomness makes it harder.
+
+### Task 5b
+
+Java has the `jcmd` which is used to send diagnostic command requests to the JVM. It can give a thread print dump of a
+currently running application, but for that it needs the `PID` which can be acquired using the `jps -l` command.
+
+#### Commands:
+
+```
+ jps -l
+ jcmd <PID> Thread.print
+```
+
+#### Output:
+
+```
+...
+"Ph-0" #29 [114599] prio=5 os_prio=0 cpu=6,95ms elapsed=96,52s tid=0x00007f60381cb6b0 nid=114599 in Object.wait()  [0x00007f6004c2d000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@23.0.2/Native Method)
+	- waiting on <0x000000062981a070> (a MainA$Chopstick)
+	at java.lang.Object.wait(java.base@23.0.2/Object.java:378)
+	at java.lang.Object.wait(java.base@23.0.2/Object.java:352)
+	at MainA$Chopstick.pickUp(MainA.java:37)
+	- locked <0x000000062981a070> (a MainA$Chopstick)
+	at MainA$Philosopher.run(MainA.java:73)
+	at java.lang.Thread.runWith(java.base@23.0.2/Thread.java:1588)
+	at java.lang.Thread.run(java.base@23.0.2/Thread.java:1575)
+...
+```
+
+There is no automatic deadlock message as it happens on logical level and not Java level. But here it can be seen that
+PH-0 is waiting on monitor (lock), all other threads are also the same position meaning everyone is waiting and nobody
+is doing work, it's a deadlock.
+
+### Task 5c
+
+Trivial solution that uses queue, it is deadlock and starvation free.
