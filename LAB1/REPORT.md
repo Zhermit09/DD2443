@@ -5,6 +5,8 @@
 
 ## Task 1: Simple Synchronization
 
+We would like to point out that skeleton code for Task 1b and Task 1c has been mixed up.
+
 ### Task 1a: Race conditions
 
 Source files:
@@ -42,7 +44,7 @@ java MainB
 Depends on how the `synchronized` is implemented, if it is applied to a nonstatic method nothing will change from 1A as
 each thread will have its own method and lock, making the lock useless. If the `synchronized` is applied either to a
 static method or directly to a class object the desired effect is achieved and the methods are synchronized, meaning the
-count will reach 4 000 000.
+count will reach `4 000 000`.
 
 ### Task 1c: Synchronization performance
 
@@ -59,10 +61,23 @@ java MainC <N>
 
 Where `N` is number of threads to execute with.
 
-In figure 1, we see how the execution time scaled with the number of threads.
-...
+![My plot for task 1c](data/chart.svg)
 
-![My plot for task 1c](data/task1c.png)
+In the figure above, we see how the execution time scaled with the number of threads. However, that is expected since
+the workload also scales based on `N` since every thread need to add `1 000 000` to the shared counter.
+
+It is interesting to see how some machines outpaced even the almighty PDC. The reason being that with the only work
+being synchronized one has essentially made a sequential program with extra steps with the lock being the bottleneck.
+Meaning that stations that are made for short burst workloads and high frequency processors like personal computers have
+the edge over the PDC.
+
+It is hard to talk about the overhead of synchronization as both congestion and workload increase with `N`, a better
+benchmark would have been to compare `MainA` to `MainB`, then the overhead would be clear. Running a quick test on one
+workstation showed a `35%` overhead.
+
+This showcases the nature of concurrent programming as it not a free lunch and one needs to be writing code specifically
+for concurrency as it can otherwise be bottlenecked. Concurrency also does not scale throughput 1:1 with `N` as there
+overheads one needs to pay in order to resolve problems that arise with concurrency. 
 
 ## Task 2: Guarded blocks using wait()/notify()
 
@@ -85,6 +100,18 @@ B is much slower that the producer, the consumer is able to remove only one valu
 growing resulting in the remaing values be removed after the stack has already been filled and the producer has quit.
 
 ## Task 4: Counting Semaphore
+
+Source files:
+
+- `task4/Main.java` (main file)
+- `task4/CountingSemaphore.java`
+
+To compile and execute:
+
+```
+javac Main.java CountingSemaphore.java
+java Main
+```
 
 ### Runner
 

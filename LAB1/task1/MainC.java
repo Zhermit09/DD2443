@@ -44,26 +44,24 @@ public class MainC {
     }
 
     public static void main(String[] args) {
+        int n = Integer.parseInt(args[0]);
         System.out.println("\t\tμ\t\tσ");
-        for (int n = 1; n <= 64; n *= 2) {
-            long[] times = new long[Y];
 
-            //Warmup
-            for (int i = 0; i < X; i++) {
-                run_experiments(n);
-            }
+        long[] times = new long[Y];
 
-            //Main run
-            for (int i = 0; i < Y; i++) {
-                times[i] = run_experiments(n);
-            }
-
-            //Metrics
-            double u = Arrays.stream(times).sum() / (double) Y;
-            double o = Math.sqrt(Arrays.stream(times).mapToDouble(x -> (u - x) * (u - x)).sum() / (float) Y);
-            System.out.printf("#%d\t%.3f\t%.3f\n", n, u, o);
+        //Warmup
+        for (int i = 0; i < X; i++) {
+            run_experiments(n);
         }
 
+        //Main run
+        for (int i = 0; i < Y; i++) {
+            times[i] = run_experiments(n);
+        }
 
+        //Metrics
+        double u = Arrays.stream(times).sum() / (double) Y;
+        double o = Math.sqrt(Arrays.stream(times).mapToDouble(x -> (u - x) * (u - x)).sum() / (float) Y);
+        System.out.printf("#%d\t%.3f\t%.3f\n", n, u, o);
     }
 }
