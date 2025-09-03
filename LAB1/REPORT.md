@@ -77,9 +77,14 @@ workstation showed a `35%` overhead.
 
 This showcases the nature of concurrent programming as it not a free lunch and one needs to be writing code specifically
 for concurrency as it can otherwise be bottlenecked. Concurrency also does not scale throughput 1:1 with `N` as there
-overheads one needs to pay in order to resolve problems that arise with concurrency. 
+overheads one needs to pay in order to resolve problems that arise with concurrency.
 
 ## Task 2: Guarded blocks using wait()/notify()
+
+Running the microbenchmark with `100` warmups and `1000` samples gave the following result
+`uB: 343.020	uC: 4880.043	uC/uB: 14.227` where `u` is the average delay for each method. As it can be seen method
+`B` is about `14x` faster than method `C` with wait()/notify(). However, this does not mean that busy-waiting is always
+better since `wait()` puts the thread in the _waiting_ mode where it releases all the locks and frees up the CPU core.
 
 ## Task 3: Producer-Consumer Buffer using Condition Variables
 
